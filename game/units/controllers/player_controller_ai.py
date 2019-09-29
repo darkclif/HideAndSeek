@@ -1,4 +1,4 @@
-from engine.unit.player_controller import *
+from game.units.controllers.player_controller import *
 
 class PlayerControllerAI(PlayerController):
     ###################

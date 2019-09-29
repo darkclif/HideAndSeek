@@ -5,7 +5,7 @@ from pyglet.window import FPSDisplay
 from engine import utils, context
 from engine.scene.scenes_stack import *
 
-from game.scene_main import *
+from game.scenes.scene_main import *
 
 # Init
 window = pyglet.window.Window(width = 1024, height = 720, vsync = False)

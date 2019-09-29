@@ -3,9 +3,9 @@ import random
 
 from engine.scene.scene import *
 
-from engine.unit.player import *
-from engine.unit.player_controller_ai import *
-from engine.unit.player_controller_human import *
+from game.units.player import *
+from game.units.controllers.player_controller_ai import *
+from game.units.controllers.player_controller_human import *
 
 class SceneMain(Scene):
     ###################################################
