@@ -1,5 +1,5 @@
-import math
-import sys
+import math, sys, copy
+import unittest
 
 ####################################################################################
 #### Constans ######################################################################
@@ -43,7 +43,8 @@ class BaseMatrix():
 
     ### Special ####################################################################
     def transpose(self):
-        new = BaseMatrix(self._cols, self._rows) # Cols and rows swaped!
+        new = copy.deepcopy(self)
+        new._rows, new._cols = new._cols, new._rows # Cols and rows swaped!
         new._mat = self._mat[:]
         return new
 
@@ -232,61 +233,75 @@ class Vect3D(BaseMatrix):
 ####################################################################################
 #### Vect 2D #######################################################################
 ####################################################################################
-class Vect2D():
+class Vect2D(BaseMatrix):
     """Vector 2D
     """
     def __init__(self, x, y):
-        self._x = x
-        self._y = y
+        self._rows = 1
+        self._cols = 2
+        self._mat = [x, y]
 
     # Return array
     def to_array(self):
-        return [self._x, self._y]
+        return self._mat[:]
 
     #### Getters / Setters #########################################################
     @property
     def x(self):
-        return self._x
+        return self._mat[0]
 
     @x.setter
-    def x(self):
-        self._x = x
+    def x(self, x):
+        self._mat[0] = x
 
     @property
     def y(self):
-        return self._y
+        return self._mat[1]
 
     @y.setter
-    def y(self):
-        self._y = y
+    def y(self, y):
+        self._mat[1] = y
 
     #### Special #########################################################
     def point_distance(self, point):
-        return math.sqrt((self._x - point._x)**2 + (self._y - point._y)**2)
+        return math.sqrt(sum([(n1 - n2)**2 for n1, n2 in zip(self._mat, point._mat)]))
 
     def normalize(self):
         l = self.length() 
-        return Vect2D(self._x / l, self._y / l)
+        return Vect2D(self.x / l, self.y / l)
 
     def dot(self, vect):
-        return Vect2D(self._x * vect.x, self._y * vect.y)
+        return Vect2D(self.x * vect.x, self.y * vect.y)
 
     def length(self):
-        return math.sqrt(self._x**2 + self._y**2)
+        return math.sqrt(sum([n**2 for n in self._mat]))
 
     #### Operators #######################################################
     def __neg__(self):
-        return Vect2D(-self._x, -self._y)
+        return Vector2D(-self.x, -self.y)
 
     # Vector * Scalar
     def __mul__(self, scalar):
-        return Vect2D(scalar * self._x, scalar * self._y)
+        return Vector2D(scalar * self.x, scalar * self.y, scalar * self.z)
 
     def __add__(self, vect):
-        return Vect2D(self._x + vect._x, self._y + vect._y)
+        return Vector2D(self.x + vect.x, self.y + vect.y, self.z + vect.z)
 
     def __sub__(self, vect):
-        return Vect2D(self._x - vect._x, self._y - vect._y)
+        return Vector2D(self.x - vect.x, self.y - vect.y, self.z - vect.z)
 
     def __eq__(self, vect):
-        return (self._x == vect._x) and (self._y == vect._y)
+        return all(abs(n) < eps for n in [x - y for x, y in zip(self._mat, vect._mat)])
+
+####################################################################################
+#### Unit test #####################################################################
+####################################################################################
+class TestSum(unittest.TestCase):
+    def test_sum(self):
+        self.assertEqual(sum([1, 2, 3]), 6, "Should be 6")
+
+    def test_sum_tuple(self):
+        self.assertEqual(sum((1, 2, 2)), 6, "Should be 6")
+
+if __name__ == '__main__':
+    unittest.main()
