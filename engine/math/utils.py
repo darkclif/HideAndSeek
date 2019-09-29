@@ -1,9 +1,11 @@
 import math
+import sys
 
 ####################################################################################
 #### Constans ######################################################################
 ####################################################################################
 pi = 3.141592
+eps = 0.000001
 
 ####################################################################################
 #### Base matrix ###################################################################
@@ -14,7 +16,7 @@ class BaseMatrix():
     def __init__(self, rows, cols):
         self._rows = rows
         self._cols = cols
-        self._mat = self.__zeros(rows, cols)
+        self._mat = self._zeros(rows, cols)
 
     # Helpers
     @staticmethod
@@ -42,7 +44,7 @@ class BaseMatrix():
     ### Special ####################################################################
     def transpose(self):
         new = BaseMatrix(self._cols, self._rows) # Cols and rows swaped!
-        new._mat = _mat[:]
+        new._mat = self._mat[:]
         return new
 
     #### Operators #################################################################
@@ -50,7 +52,7 @@ class BaseMatrix():
         if (self._cols != mat._cols) or (self._rows != mat._rows):
             raise Exception("Cannot compare matrices of this size, first [{self._rows},{self._cols}] second [{mat._rows},{mat._cols}]")
 
-        return all(abs(n) < 0.00001 for n in [x - y for x, y in zip(self._mat, mat._mat)])
+        return all(abs(n) < eps for n in [x - y for x, y in zip(self._mat, mat._mat)])
 
     def __mul__(self, mat):
         if self._cols != mat._rows:
@@ -102,7 +104,7 @@ class Transform2D(BaseMatrix):
         self._cols = 3
         self._mat = self._identity(3)
 
-    # Constructor
+    #### Constructors ##############################################################
     @classmethod
     def identity(cls):
         new = cls()
@@ -156,76 +158,76 @@ class Transform2D(BaseMatrix):
 ####################################################################################
 #### Vect 3D #######################################################################
 ####################################################################################
-class Vect3D():
+class Vect3D(BaseMatrix):
     """Vector 3D
     """
     def __init__(self, x, y, z):
-        self._x = x
-        self._y = y
-        self._z = z
+        self._rows = 1
+        self._cols = 3
+        self._mat = [x, y, z]
 
     # Return array
     def to_array(self):
-        return [self._x, self._y, self._z]
+        return self._mat[:]
 
     #### Getters / Setters #########################################################
     @property
     def x(self):
-        return self._x
+        return self._mat[0]
 
     @x.setter
-    def x(self):
-        self._x = x
+    def x(self, x):
+        self._mat[0] = x
 
     @property
     def y(self):
-        return self._y
+        return self._mat[1]
 
     @y.setter
-    def y(self):
-        self._y = y
+    def y(self, y):
+        self._mat[1] = y
 
     @property
     def z(self):
-        return self._z
+        return self._mat[2]
 
     @y.setter
-    def z(self):
-        self._z = z
+    def z(self, z):
+        self._mat[2] = z
 
     #### Special #########################################################
     def point_distance(self, point):
-        return math.sqrt((self._x - point._x)**2 + (self._y - point._y)**2 + (self._z - point._z)**2)
+        return math.sqrt(sum([(n1 - n2)**2 for n1, n2 in zip(self._mat, point._mat)]))
 
     def normalize(self):
         l = self.length() 
-        return Vect3D(self._x / l, self._y / l, self._z / l)
+        return Vect3D(self.x / l, self.y / l, self.z / l)
 
     def cross(self, vect):
-        return Vect3D(self._y*vect._z - self._z*vect._y, self._z*vect._x - self._x*vect._z, self._x*vect._y - self._y*vect._x)
+        return Vect3D(self.y*vect.z - self.z*vect.y, self.z*vect.x - self.x*vect.z, self.x*vect.y - self.y*vect.x)
 
     def dot(self, vect):
-        return Vect3D(self._x * vect.x, self._y * vect.y, self._z * vect.z)
+        return Vect3D(self.x * vect.x, self.y * vect.y, self.z * vect.z)
 
     def length(self):
-        return math.sqrt(self._x**2 + self._y**2 + self._z**2)
+        return math.sqrt(sum([n**2 for n in self._mat]))
 
     #### Operators #######################################################
     def __neg__(self):
-        return Vector3D(-self._x, -self._y, -self._z)
+        return Vector3D(-self.x, -self.y, -self.z)
 
     # Vector * Scalar
     def __mul__(self, scalar):
-        return Vector3D(scalar * self._x, scalar * self._y, scalar * self._z)
+        return Vector3D(scalar * self.x, scalar * self.y, scalar * self.z)
 
     def __add__(self, vect):
-        return Vector3D(self._x + vect._x, self._y + vect._y, self._z + vect._z)
+        return Vector3D(self.x + vect.x, self.y + vect.y, self.z + vect.z)
 
     def __sub__(self, vect):
-        return Point2D(self._x - vect._x, self._y - vect._y, self._z - vect._z)
+        return Vector3D(self.x - vect.x, self.y - vect.y, self.z - vect.z)
 
     def __eq__(self, vect):
-        return (self._x == vect._x) and (self._y == vect._y) and (self._z == vect._z)
+        return all(abs(n) < eps for n in [x - y for x, y in zip(self._mat, vect._mat)])
 
 ####################################################################################
 #### Vect 2D #######################################################################
